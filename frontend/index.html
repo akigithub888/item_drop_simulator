@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drop Simulator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0e1015;
+      --bg2:        #141820;
+      --panel:      #181e2a;
+      --panel2:     #1e2535;
+      --border:     #2a3347;
+      --border2:    #3a4a66;
+      --blue:       #4a90d9;
+      --blue-dim:   #2d5a8a;
+      --blue-glow:  rgba(74,144,217,0.15);
+      --teal:       #00b4d8;
+      --gold:       #f0c040;
+      --gold-dim:   #a07820;
+      --green:      #4caf7d;
+      --red:        #e05555;
+      --text:       #c8d4e8;
+      --text2:      #8a9ab8;
+      --text3:      #4a5a78;
+      --white:      #e8eef8;
+      --radius:     3px;
+      --radius2:    6px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 15px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.07;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .topbar {
+      width: 100%;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 52px;
+      position: relative;
+      z-index: 10;
+    }
+    .topbar-logo {
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--white);
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .topbar-logo .icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+    }
+    .topbar-sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+    .topbar-badge { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); }
+    .topbar-right { margin-left: auto; font-size: 12px; color: var(--text3); letter-spacing: 0.05em; }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1060px;
+      padding: 32px 20px 80px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .section-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius2); overflow: hidden; }
+    .panel-header {
+      background: var(--panel2); border-bottom: 1px solid var(--border);
+      padding: 12px 18px; display: flex; align-items: center; gap: 10px;
+    }
+    .panel-header-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); }
+    .panel-header-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 6px var(--blue); }
+    .panel-body { padding: 18px; }
+
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    .field-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text2); margin-bottom: 7px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .field-hint { font-size: 11px; color: var(--text3); font-weight: 400; letter-spacing: 0; }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-family: 'Source Sans 3', sans-serif;
+      font-size: 14px;
+      padding: 8px 12px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      appearance: none;
+    }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5a78' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
+    select:focus, input:focus { border-color: var(--blue-dim); box-shadow: 0 0 0 2px var(--blue-glow); }
+    select option { background: var(--panel2); }
+    input::placeholder { color: var(--text3); }
+
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* loot pool list */
+    .loot-list {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .loot-list::-webkit-scrollbar { width: 4px; }
+    .loot-list::-webkit-scrollbar-track { background: transparent; }
+    .loot-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .loot-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+      user-select: none;
+    }
+    .loot-item:last-child { border-bottom: none; }
+    .loot-item:hover { background: var(--panel2); }
+    .loot-item.selected { background: rgba(74,144,217,0.08); }
+    .loot-item.selected .loot-item-name { color: var(--gold); }
+    .loot-item-check {
+      width: 14px; height: 14px;
+      border: 1px solid var(--border2);
+      border-radius: 2px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+      transition: background 0.1s, border-color 0.1s;
+    }
+    .loot-item.selected .loot-item-check { background: var(--blue-dim); border-color: var(--blue); color: white; }
+    .loot-item-name { font-size: 13px; color: var(--text); flex: 1; }
+    .loot-item-link { font-size: 11px; color: var(--text3); text-decoration: none; flex-shrink: 0; padding: 2px 6px; border-radius: 2px; border: 1px solid var(--border); transition: color 0.1s, border-color 0.1s; }
+    .loot-item-link:hover { color: var(--blue); border-color: var(--blue-dim); }
+
+    .loot-empty { padding: 24px; text-align: center; color: var(--text3); font-size: 13px; }
+    .loot-loading { padding: 16px; text-align: center; color: var(--text3); font-size: 13px; }
+
+    .loot-actions {
+      display: flex; gap: 8px; margin-top: 8px;
+    }
+    .loot-action-btn {
+      font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 0;
+      transition: color 0.1s; letter-spacing: 0.05em;
+    }
+    .loot-action-btn:hover { color: var(--blue); }
+
+    .selected-count {
+      font-size: 11px; color: var(--text3); margin-left: auto;
+    }
+    .selected-count span { color: var(--blue); font-weight: 600; }
+
+    /* target select */
+    .target-select-wrap { position: relative; }
+    .target-select-wrap select { }
+
+    /* sim button */
+    .sim-btn {
+      width: 100%; padding: 11px;
+      background: linear-gradient(180deg, #2a5fa8 0%, #1e4a8a 100%);
+      border: 1px solid var(--blue-dim);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+      cursor: pointer;
+      transition: filter 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.07) inset;
+    }
+    .sim-btn:hover:not(:disabled) { filter: brightness(1.15); box-shadow: 0 0 16px rgba(74,144,217,0.3), 0 1px 0 rgba(255,255,255,0.07) inset; }
+    .sim-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .error-box {
+      background: rgba(224,85,85,0.08); border: 1px solid rgba(224,85,85,0.4);
+      border-radius: var(--radius); padding: 10px 14px; color: #e07878;
+      font-size: 13px; margin-bottom: 14px; display: none;
+    }
+    .error-box.visible { display: block; animation: fadeSlide 0.15s ease; }
+
+    /* right col */
+    .right-col { display: flex; flex-direction: column; gap: 16px; }
+
+    .empty-state {
+      border: 1px dashed var(--border); border-radius: var(--radius2);
+      padding: 48px 24px; text-align: center; color: var(--text3);
+    }
+    .empty-state .es-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state p { font-size: 13px; line-height: 1.6; }
+
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .stat-card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: var(--radius2); padding: 14px 16px;
+      position: relative; overflow: hidden;
+    }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+    .stat-card.blue::before  { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
+    .stat-card.gold::before  { background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+    .stat-card.green::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
+    .stat-value { font-family: 'Rajdhani', sans-serif; font-size: 32px; font-weight: 700; color: var(--white); line-height: 1; margin-bottom: 4px; }
+    .stat-card.blue  .stat-value { color: var(--blue); }
+    .stat-card.gold  .stat-value { color: var(--gold); }
+    .stat-card.green .stat-value { color: var(--green); }
+    .stat-label { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
+    .stat-sub   { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+    .curve-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .curve-row:last-child { border-bottom: none; }
+    .curve-pct { width: 34px; font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600; color: var(--text2); flex-shrink: 0; text-align: right; }
+    .curve-bar-wrap { flex: 1; height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+    .curve-bar { height: 100%; border-radius: 3px; width: 0; transition: width 0.7s cubic-bezier(0.16,1,0.3,1); }
+    .curve-bar.p25 { background: var(--green); }
+    .curve-bar.p50 { background: var(--teal); }
+    .curve-bar.p75 { background: var(--blue); }
+    .curve-bar.p90 { background: #9b72cf; }
+    .curve-bar.p99 { background: var(--gold); }
+    .curve-runs { width: 90px; font-size: 13px; color: var(--text2); flex-shrink: 0; text-align: right; }
+    .curve-runs strong { color: var(--white); font-weight: 600; }
+
+    .item-summary { display: flex; align-items: center; gap: 12px; padding: 12px 18px; background: var(--panel2); border-bottom: 1px solid var(--border); }
+    .item-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #2a3a5a, #1a2a3a); border: 1px solid var(--border2); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+    .item-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; color: var(--gold); }
+    .item-name a { color: inherit; text-decoration: none; border-bottom: 1px dashed var(--gold-dim); }
+    .item-name a:hover { border-bottom-color: var(--gold); }
+    .item-meta { font-size: 12px; color: var(--text3); margin-top: 1px; }
+
+    #results { display: none; }
+    #results.visible { display: flex; flex-direction: column; gap: 16px; animation: fadeSlide 0.25s ease; }
+
+    @keyframes fadeSlide { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+    @media (max-width: 760px) {
+      .page { grid-template-columns: 1fr; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="icon">⚔</div>
+    DropSim
+  </div>
+  <div class="topbar-sep"></div>
+  <div class="topbar-badge">Loot Calculator</div>
+  <div class="topbar-right">World of Warcraft · Dungeon Drops</div>
+</div>
+
+<div class="page">
+
+  <!-- LEFT: config -->
+  <div>
+    <div class="section-label">Configuration</div>
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-dot"></div>
+        <div class="panel-header-title">Simulation Setup</div>
+      </div>
+      <div class="panel-body">
+
+        <div class="field">
+          <div class="field-label">Dungeon</div>
+          <select id="dungeonSelect" onchange="onDungeonChange()">
+            <option value="">Loading dungeons…</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <div class="field-label">
+            Loot Pool
+            <div style="display:flex;gap:10px;align-items:center">
+              <button class="loot-action-btn" onclick="selectAll()">Select all</button>
+              <button class="loot-action-btn" onclick="selectNone()">Clear</button>
+              <span class="selected-count"><span id="selectedCount">0</span> selected</span>
+            </div>
+          </div>
+          <div class="loot-list" id="lootList">
+            <div class="loot-empty">Choose a dungeon above to load its loot table.</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-label">Target Item</div>
+          <select id="targetSelect">
+            <option value="">— select an item —</option>
+          </select>
+        </div>
+
+        <div class="field row2">
+          <div>
+            <div class="field-label">Players</div>
+            <input type="number" id="players" value="5" min="1" max="100" />
+          </div>
+          <div>
+            <div class="field-label">Trials</div>
+            <input type="number" id="trials" value="100000" min="1000" max="1000000" />
+          </div>
+        </div>
+
+        <div class="error-box" id="errorBox"></div>
+        <button class="sim-btn" id="simBtn" onclick="runSimulation()">⚙ Run Simulation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: results -->
+  <div class="right-col">
+    <div class="section-label">Results</div>
+
+    <div class="empty-state" id="emptyState">
+      <div class="es-icon">🎲</div>
+      <p>Pick a dungeon, select items from the loot pool,<br/>choose your target, then run the simulation.</p>
+    </div>
+
+    <div id="results">
+      <div class="panel">
+        <div class="item-summary" id="itemSummary">
+          <div class="item-icon">🗡</div>
+          <div>
+            <div class="item-name" id="rItemName">—</div>
+            <div class="item-meta" id="rItemMeta">—</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="stat-row">
+            <div class="stat-card blue">
+              <div class="stat-value" id="rDropChance">—</div>
+              <div class="stat-label">Drop Chance</div>
+              <div class="stat-sub" id="rDropFraction">—</div>
+            </div>
+            <div class="stat-card gold">
+              <div class="stat-value" id="rExpected">—</div>
+              <div class="stat-label">Expected Runs</div>
+              <div class="stat-sub">theoretical avg</div>
+            </div>
+            <div class="stat-card green">
+              <div class="stat-value" id="rSimulated">—</div>
+              <div class="stat-label">Simulated Avg</div>
+              <div class="stat-sub" id="rTrials">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-header-dot"></div>
+          <div class="panel-header-title">Probability Curve</div>
+        </div>
+        <div class="panel-body" id="curveRows"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const barClasses = ['p25','p50','p75','p90','p99'];
+
+  // State
+  let allItems   = [];   // full loot table from API [{id, name, wowhead_url}]
+  let selectedIds = new Set(); // item IDs the user has checked
+
+  // ── Dungeon loading ──────────────────────────────────────────
+
+  async function loadDungeons() {
+    const sel = document.getElementById('dungeonSelect');
+    try {
+      const res  = await fetch('/dungeons');
+      const data = await res.json();
+      data.sort((a, b) => a.name.localeCompare(b.name));
+      sel.innerHTML = '<option value="">— choose a dungeon —</option>';
+      data.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.name;
+        sel.appendChild(opt);
+      });
+    } catch {
+      sel.innerHTML = '<option value="">Failed to load dungeons</option>';
+    }
+  }
+
+  async function onDungeonChange() {
+    const id = document.getElementById('dungeonSelect').value;
+    if (!id) return;
+
+    const list = document.getElementById('lootList');
+    list.innerHTML = '<div class="loot-loading">Loading loot table…</div>';
+    allItems = [];
+    selectedIds.clear();
+    updateTargetDropdown();
+    updateSelectedCount();
+
+    try {
+      const res  = await fetch(`/dungeons/${id}/loot`);
+      allItems   = await res.json();
+      allItems.sort((a, b) => a.name.localeCompare(b.name));
+      // default: all selected
+      allItems.forEach(item => selectedIds.add(item.id));
+      renderLootList();
+      updateTargetDropdown();
+      updateSelectedCount();
+    } catch {
+      list.innerHTML = '<div class="loot-empty">Failed to load loot table.</div>';
+    }
+  }
+
+  // ── Loot list rendering ──────────────────────────────────────
+
+  function renderLootList() {
+    const list = document.getElementById('lootList');
+    if (!allItems.length) {
+      list.innerHTML = '<div class="loot-empty">No items found for this dungeon.</div>';
+      return;
+    }
+    list.innerHTML = '';
+    allItems.forEach(item => {
+      const row = document.createElement('div');
+      row.className = 'loot-item' + (selectedIds.has(item.id) ? ' selected' : '');
+      row.dataset.id = item.id;
+      row.innerHTML = `
+        <div class="loot-item-check">${selectedIds.has(item.id) ? '✓' : ''}</div>
+        <div class="loot-item-name">${item.name}</div>
+        <a class="loot-item-link" href="${item.wowhead_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Wowhead</a>
+      `;
+      row.addEventListener('click', () => toggleItem(item.id));
+      list.appendChild(row);
+    });
+  }
+
+  function toggleItem(id) {
+    if (selectedIds.has(id)) {
+      selectedIds.delete(id);
+    } else {
+      selectedIds.add(id);
+    }
+    const row = document.querySelector(`.loot-item[data-id="${id}"]`);
+    if (row) {
+      row.classList.toggle('selected', selectedIds.has(id));
+      row.querySelector('.loot-item-check').textContent = selectedIds.has(id) ? '✓' : '';
+    }
+    updateSelectedCount();
+    updateTargetDropdown();
+  }
+
+  function selectAll() {
+    allItems.forEach(item => selectedIds.add(item.id));
+    renderLootList();
+    updateTargetDropdown();
+    updateSelectedCount();
+  }
+
+  function selectNone() {
+    selectedIds.clear();
+    renderLootList();
+    updateTargetDropdown();
+    updateSelectedCount();
+  }
+
+  function updateSelectedCount() {
+    document.getElementById('selectedCount').textContent = selectedIds.size;
+  }
+
+  // ── Target dropdown ──────────────────────────────────────────
+
+  function updateTargetDropdown() {
+    const sel = document.getElementById('targetSelect');
+    const prev = sel.value;
+    sel.innerHTML = '<option value="">— select an item —</option>';
+    allItems
+      .filter(item => selectedIds.has(item.id))
+      .forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.name;
+        opt.dataset.id = item.id;
+        opt.textContent = item.name;
+        if (item.name === prev) opt.selected = true;
+        sel.appendChild(opt);
+      });
+  }
+
+  // ── Simulation ───────────────────────────────────────────────
+
+  function showError(msg) {
+    const box = document.getElementById('errorBox');
+    box.textContent = msg;
+    box.classList.add('visible');
+  }
+  function clearError() {
+    document.getElementById('errorBox').classList.remove('visible');
+  }
+
+  async function runSimulation() {
+    clearError();
+
+    const target  = document.getElementById('targetSelect').value;
+    const players = parseInt(document.getElementById('players').value);
+    const trials  = parseInt(document.getElementById('trials').value);
+    const pool    = allItems.filter(i => selectedIds.has(i.id)).map(i => i.name);
+
+    if (!pool.length)   return showError('Select at least one item from the loot pool.');
+    if (!target)        return showError('Select a target item.');
+    if (!pool.includes(target)) return showError(`Target item is not in the selected pool.`);
+
+    const btn = document.getElementById('simBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Simulating…';
+
+    try {
+      const res = await fetch('/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_item: target, players, pool, trials })
+      });
+      const data = await res.json();
+      if (!res.ok) { showError(data.error || 'Something went wrong.'); return; }
+
+      const targetItem = allItems.find(i => i.name === target);
+      renderResults(data, players, pool.length, trials, targetItem);
+    } catch {
+      showError('Could not reach the server.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⚙ Run Simulation';
+    }
+  }
+
+  function renderResults(data, players, poolSize, trials, targetItem) {
+    document.getElementById('emptyState').style.display = 'none';
+
+    const nameEl = document.getElementById('rItemName');
+    if (targetItem?.wowhead_url) {
+      nameEl.innerHTML = `<a href="${targetItem.wowhead_url}" target="_blank" rel="noopener">${data.target_item}</a>`;
+    } else {
+      nameEl.textContent = data.target_item;
+    }
+
+    document.getElementById('rItemMeta').textContent =
+      `${poolSize}-item pool · ${players} player${players !== 1 ? 's' : ''}`;
+    document.getElementById('rDropChance').textContent = (data.drop_chance * 100).toFixed(2) + '%';
+    document.getElementById('rDropFraction').textContent = `1 in ${Math.round(data.expected_runs)} runs`;
+    document.getElementById('rExpected').textContent  = Math.round(data.expected_runs);
+    document.getElementById('rSimulated').textContent = data.simulated_runs.toFixed(1);
+    document.getElementById('rTrials').textContent    = `${trials.toLocaleString()} trials`;
+
+    const container = document.getElementById('curveRows');
+    container.innerHTML = '';
+    const maxRuns = data.curve[data.curve.length - 1].runs;
+
+    data.curve.forEach((pt, i) => {
+      const pct  = Math.round(pt.probability * 100);
+      const barW = Math.round((pt.runs / maxRuns) * 100);
+      const row  = document.createElement('div');
+      row.className = 'curve-row';
+      row.innerHTML = `
+        <div class="curve-pct">${pct}%</div>
+        <div class="curve-bar-wrap"><div class="curve-bar ${barClasses[i]}" data-w="${barW}"></div></div>
+        <div class="curve-runs"><strong>${pt.runs}</strong> runs</div>
+      `;
+      container.appendChild(row);
+    });
+
+    document.getElementById('results').classList.add('visible');
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.curve-bar').forEach(b => { b.style.width = b.dataset.w + '%'; });
+    });
+  }
+
+  // ── Init ─────────────────────────────────────────────────────
+  loadDungeons();
+</script>
+</body>
+</html>
