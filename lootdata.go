@@ -241,8 +241,8 @@ func (ld *LootData) GetLootForSpec(luaInstanceID, specID int) ([]LootItem, error
 	var items []LootItem
 	for _, itemID := range dungeon.ItemIDs {
 		entry, hasEntry := ld.Items[itemID]
-		if specID != 0 && hasEntry && len(entry.SpecIDs) > 0 {
-			if !entry.SpecIDs[specID] {
+		if specID != 0 {
+			if !hasEntry || len(entry.SpecIDs) == 0 || !entry.SpecIDs[specID] {
 				continue
 			}
 		}
