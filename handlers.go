@@ -2,23 +2,31 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
-// SimulateRequest is the expected JSON body for POST /simulate.
 type SimulateRequest struct {
 	TargetItem string   `json:"target_item"`
 	Players    int      `json:"players"`
+	Traders    int      `json:"traders"`
 	Pool       []string `json:"pool"`
 	Trials     int      `json:"trials"`
 }
 
-// ErrorResponse is returned when something goes wrong.
 type ErrorResponse struct {
 	Error string `json:"error"`
+}
+
+type ParseSimCResponse struct {
+	Class    string `json:"class"`
+	Spec     string `json:"spec"`
+	SpecID   int    `json:"spec_id"`
+	ClassID  int    `json:"class_id"`
+	SpecName string `json:"spec_name"`
 }
 
 func writeJSON(w http.ResponseWriter, status int, data any) {
@@ -65,6 +73,7 @@ func handleSimulate(rng *rand.Rand) http.HandlerFunc {
 		sim := Simulation{
 			Pool:       NewLootPool(req.Pool),
 			Players:    req.Players,
+			Traders:    req.Traders,
 			TargetItem: req.TargetItem,
 		}
 
@@ -95,27 +104,37 @@ func handleDungeons(blizz *BlizzardClient) http.HandlerFunc {
 	}
 }
 
-func handleDungeonLoot(blizz *BlizzardClient) http.HandlerFunc {
+func handleDungeonLoot(loot *LootData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			writeJSON(w, http.StatusMethodNotAllowed, ErrorResponse{"method not allowed"})
 			return
 		}
 
-		// extract ID from /dungeons/{id}/loot
 		parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 		if len(parts) < 3 {
 			writeJSON(w, http.StatusBadRequest, ErrorResponse{"invalid path"})
 			return
 		}
 
-		id, err := strconv.Atoi(parts[1])
+		blizzardID, err := strconv.Atoi(parts[1])
 		if err != nil {
 			writeJSON(w, http.StatusBadRequest, ErrorResponse{"invalid dungeon ID"})
 			return
 		}
 
-		items, err := blizz.GetLoot(id)
+		luaID, ok := BlizzardToLuaInstanceID[blizzardID]
+		if !ok {
+			writeJSON(w, http.StatusBadRequest, ErrorResponse{fmt.Sprintf("dungeon %d is not in the current season", blizzardID)})
+			return
+		}
+
+		specID := 0
+		if s := r.URL.Query().Get("spec"); s != "" {
+			specID, _ = strconv.Atoi(s)
+		}
+
+		items, err := loot.GetLootForSpec(luaID, specID)
 		if err != nil {
 			writeJSON(w, http.StatusInternalServerError, ErrorResponse{err.Error()})
 			return
@@ -123,4 +142,35 @@ func handleDungeonLoot(blizz *BlizzardClient) http.HandlerFunc {
 
 		writeJSON(w, http.StatusOK, items)
 	}
+}
+
+func handleParseSimC(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, ErrorResponse{"method not allowed"})
+		return
+	}
+
+	var body struct {
+		SimC string `json:"simc"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{"invalid JSON body"})
+		return
+	}
+
+	className, specName, info, ok := ParseSimC(body.SimC)
+	if !ok {
+		writeJSON(w, http.StatusBadRequest, ErrorResponse{
+			fmt.Sprintf("could not identify spec for class=%q spec=%q", className, specName),
+		})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, ParseSimCResponse{
+		Class:    className,
+		Spec:     specName,
+		SpecID:   info.SpecID,
+		ClassID:  info.ClassID,
+		SpecName: info.Name,
+	})
 }

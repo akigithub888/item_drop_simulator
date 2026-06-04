@@ -9,26 +9,26 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:         #0e1015;
-      --bg2:        #141820;
-      --panel:      #181e2a;
-      --panel2:     #1e2535;
-      --border:     #2a3347;
-      --border2:    #3a4a66;
-      --blue:       #4a90d9;
-      --blue-dim:   #2d5a8a;
-      --blue-glow:  rgba(74,144,217,0.15);
-      --teal:       #00b4d8;
-      --gold:       #f0c040;
-      --gold-dim:   #a07820;
-      --green:      #4caf7d;
-      --red:        #e05555;
-      --text:       #c8d4e8;
-      --text2:      #8a9ab8;
-      --text3:      #4a5a78;
-      --white:      #e8eef8;
-      --radius:     3px;
-      --radius2:    6px;
+      --bg:        #0e1015;
+      --bg2:       #141820;
+      --panel:     #181e2a;
+      --panel2:    #1e2535;
+      --border:    #2a3347;
+      --border2:   #3a4a66;
+      --blue:      #4a90d9;
+      --blue-dim:  #2d5a8a;
+      --blue-glow: rgba(74,144,217,0.15);
+      --teal:      #00b4d8;
+      --gold:      #f0c040;
+      --gold-dim:  #a07820;
+      --green:     #4caf7d;
+      --red:       #e05555;
+      --text:      #c8d4e8;
+      --text2:     #8a9ab8;
+      --text3:     #4a5a78;
+      --white:     #e8eef8;
+      --radius:    3px;
+      --radius2:   6px;
     }
 
     body {
@@ -44,8 +44,7 @@
 
     body::before {
       content: '';
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background-image:
         linear-gradient(var(--border) 1px, transparent 1px),
         linear-gradient(90deg, var(--border) 1px, transparent 1px);
@@ -55,44 +54,29 @@
       z-index: 0;
     }
 
+    /* topbar */
     .topbar {
-      width: 100%;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      height: 52px;
-      position: relative;
-      z-index: 10;
+      width: 100%; background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 0 24px; display: flex; align-items: center; gap: 12px;
+      height: 52px; position: relative; z-index: 10;
     }
     .topbar-logo {
-      font-family: 'Rajdhani', sans-serif;
-      font-weight: 700;
-      font-size: 20px;
-      color: var(--white);
-      letter-spacing: 0.05em;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 20px;
+      color: var(--white); letter-spacing: 0.05em; display: flex; align-items: center; gap: 10px;
     }
     .topbar-logo .icon {
       width: 28px; height: 28px;
       background: linear-gradient(135deg, var(--blue), var(--teal));
-      border-radius: var(--radius);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px;
+      border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 15px;
     }
     .topbar-sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
     .topbar-badge { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text2); }
-    .topbar-right { margin-left: auto; font-size: 12px; color: var(--text3); letter-spacing: 0.05em; }
+    .topbar-right { margin-left: auto; font-size: 12px; color: var(--text3); }
 
+    /* layout */
     .page {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 1060px;
+      position: relative; z-index: 1;
+      width: 100%; max-width: 1060px;
       padding: 32px 20px 80px;
       display: grid;
       grid-template-columns: 360px 1fr;
@@ -101,22 +85,22 @@
     }
 
     .section-label {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 11px; font-weight: 600;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--text3);
-      margin-bottom: 10px;
-      display: flex; align-items: center; gap: 8px;
+      font-family: 'Rajdhani', sans-serif; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--text3);
+      margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
     }
     .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius2); overflow: hidden; }
+    .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius2); overflow: hidden; margin-bottom: 16px; }
+    .panel:last-child { margin-bottom: 0; }
     .panel-header {
       background: var(--panel2); border-bottom: 1px solid var(--border);
       padding: 12px 18px; display: flex; align-items: center; gap: 10px;
     }
     .panel-header-title { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--white); }
-    .panel-header-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 6px var(--blue); }
+    .panel-header-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 6px var(--blue); flex-shrink: 0; }
+    .panel-header-dot.gold { background: var(--gold); box-shadow: 0 0 6px var(--gold); }
+    .panel-header-right { margin-left: auto; }
     .panel-body { padding: 18px; }
 
     .field { margin-bottom: 18px; }
@@ -128,102 +112,148 @@
     }
     .field-hint { font-size: 11px; color: var(--text3); font-weight: 400; letter-spacing: 0; }
 
-    select, input[type="text"], input[type="number"] {
-      width: 100%;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--white);
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 14px;
-      padding: 8px 12px;
-      outline: none;
+    select, input[type="text"], input[type="number"], textarea {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--white);
+      font-family: 'Source Sans 3', sans-serif; font-size: 14px;
+      padding: 8px 12px; outline: none;
       transition: border-color 0.15s, box-shadow 0.15s;
-      appearance: none;
     }
-    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5a78' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; }
-    select:focus, input:focus { border-color: var(--blue-dim); box-shadow: 0 0 0 2px var(--blue-glow); }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5a78' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; cursor: pointer; appearance: none; }
     select option { background: var(--panel2); }
-    input::placeholder { color: var(--text3); }
+    select:focus, input:focus, textarea:focus { border-color: var(--blue-dim); box-shadow: 0 0 0 2px var(--blue-glow); }
+    input::placeholder, textarea::placeholder { color: var(--text3); }
+    textarea { resize: vertical; min-height: 100px; font-size: 12px; font-family: monospace; line-height: 1.5; }
 
     .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-    /* loot pool list */
-    .loot-list {
-      background: var(--bg2);
-      border: 1px solid var(--border);
+    /* spec panel tabs */
+    .spec-tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--panel2); }
+    .spec-tab {
+      flex: 1; padding: 11px 14px; background: none; border: none;
+      font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3);
+      cursor: pointer; transition: color 0.15s, background 0.15s;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+    }
+    .spec-tab:hover { color: var(--text2); }
+    .spec-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .spec-tab-body { display: none; padding: 18px; }
+    .spec-tab-body.active { display: block; }
+
+    /* class/spec picker grid */
+    .class-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+      margin-bottom: 10px;
+    }
+    .class-btn {
+      padding: 7px 4px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text2); font-size: 11px;
+      font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      letter-spacing: 0.04em;
+    }
+    .class-btn:hover { border-color: var(--border2); color: var(--text); }
+    .class-btn.active { background: rgba(240,192,64,0.08); border-color: var(--gold-dim); color: var(--gold); }
+
+    .spec-picker-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--text2); margin-bottom: 7px;
+    }
+    .spec-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+    }
+    .spec-btn {
+      padding: 7px 4px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--text2); font-size: 11px;
+      font-weight: 600; cursor: pointer; transition: all 0.15s; text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      letter-spacing: 0.04em;
+    }
+    .spec-btn:hover { border-color: var(--border2); color: var(--text); }
+    .spec-btn.active { background: rgba(74,144,217,0.1); border-color: var(--blue-dim); color: var(--blue); }
+    .spec-section { display: none; margin-top: 12px; }
+    .spec-section.visible { display: block; animation: fadeSlide 0.15s ease; }
+
+    /* spec badge */
+    .spec-badge {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(240,192,64,0.08);
+      border: 1px solid var(--gold-dim);
       border-radius: var(--radius);
-      max-height: 220px;
-      overflow-y: auto;
+      padding: 8px 12px;
+      margin-top: 10px;
+    }
+    .spec-badge.visible { display: flex; animation: fadeSlide 0.2s ease; }
+    .spec-badge-icon { font-size: 18px; }
+    .spec-badge-text { flex: 1; }
+    .spec-badge-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 15px; color: var(--gold); }
+    .spec-badge-sub { font-size: 12px; color: var(--text3); }
+    .spec-badge-clear { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 0; transition: color 0.15s; }
+    .spec-badge-clear:hover { color: var(--red); }
+
+    /* loot list */
+    .loot-list {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--radius); max-height: 220px; overflow-y: auto;
     }
     .loot-list::-webkit-scrollbar { width: 4px; }
-    .loot-list::-webkit-scrollbar-track { background: transparent; }
     .loot-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
     .loot-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 12px;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.1s;
-      user-select: none;
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 12px; border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background 0.1s; user-select: none;
     }
     .loot-item:last-child { border-bottom: none; }
     .loot-item:hover { background: var(--panel2); }
     .loot-item.selected { background: rgba(74,144,217,0.08); }
     .loot-item.selected .loot-item-name { color: var(--gold); }
     .loot-item-check {
-      width: 14px; height: 14px;
-      border: 1px solid var(--border2);
-      border-radius: 2px;
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 10px;
-      transition: background 0.1s, border-color 0.1s;
+      width: 14px; height: 14px; border: 1px solid var(--border2); border-radius: 2px;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      font-size: 10px; transition: background 0.1s, border-color 0.1s;
     }
     .loot-item.selected .loot-item-check { background: var(--blue-dim); border-color: var(--blue); color: white; }
     .loot-item-name { font-size: 13px; color: var(--text); flex: 1; }
-    .loot-item-link { font-size: 11px; color: var(--text3); text-decoration: none; flex-shrink: 0; padding: 2px 6px; border-radius: 2px; border: 1px solid var(--border); transition: color 0.1s, border-color 0.1s; }
+    .loot-item-link {
+      font-size: 11px; color: var(--text3); text-decoration: none;
+      padding: 2px 6px; border-radius: 2px; border: 1px solid var(--border);
+      flex-shrink: 0; transition: color 0.1s, border-color 0.1s;
+    }
     .loot-item-link:hover { color: var(--blue); border-color: var(--blue-dim); }
-
     .loot-empty { padding: 24px; text-align: center; color: var(--text3); font-size: 13px; }
     .loot-loading { padding: 16px; text-align: center; color: var(--text3); font-size: 13px; }
 
-    .loot-actions {
-      display: flex; gap: 8px; margin-top: 8px;
-    }
-    .loot-action-btn {
-      font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 0;
-      transition: color 0.1s; letter-spacing: 0.05em;
-    }
+    .loot-actions { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
+    .loot-action-btn { font-size: 11px; color: var(--text3); background: none; border: none; cursor: pointer; padding: 0; transition: color 0.1s; letter-spacing: 0.05em; }
     .loot-action-btn:hover { color: var(--blue); }
-
-    .selected-count {
-      font-size: 11px; color: var(--text3); margin-left: auto;
-    }
+    .selected-count { font-size: 11px; color: var(--text3); margin-left: auto; }
     .selected-count span { color: var(--blue); font-weight: 600; }
-
-    /* target select */
-    .target-select-wrap { position: relative; }
-    .target-select-wrap select { }
 
     /* sim button */
     .sim-btn {
       width: 100%; padding: 11px;
       background: linear-gradient(180deg, #2a5fa8 0%, #1e4a8a 100%);
-      border: 1px solid var(--blue-dim);
-      border-radius: var(--radius);
-      color: var(--white);
-      font-family: 'Rajdhani', sans-serif;
+      border: 1px solid var(--blue-dim); border-radius: var(--radius);
+      color: var(--white); font-family: 'Rajdhani', sans-serif;
       font-size: 15px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
-      cursor: pointer;
-      transition: filter 0.15s, box-shadow 0.15s;
+      cursor: pointer; transition: filter 0.15s, box-shadow 0.15s;
       box-shadow: 0 1px 0 rgba(255,255,255,0.07) inset;
     }
     .sim-btn:hover:not(:disabled) { filter: brightness(1.15); box-shadow: 0 0 16px rgba(74,144,217,0.3), 0 1px 0 rgba(255,255,255,0.07) inset; }
     .sim-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .import-btn {
+      width: 100%; padding: 9px;
+      background: linear-gradient(180deg, #5a4a20 0%, #3a3010 100%);
+      border: 1px solid var(--gold-dim); border-radius: var(--radius);
+      color: var(--gold); font-family: 'Rajdhani', sans-serif;
+      font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      cursor: pointer; transition: filter 0.15s;
+    }
+    .import-btn:hover { filter: brightness(1.15); }
 
     .error-box {
       background: rgba(224,85,85,0.08); border: 1px solid rgba(224,85,85,0.4);
@@ -233,7 +263,7 @@
     .error-box.visible { display: block; animation: fadeSlide 0.15s ease; }
 
     /* right col */
-    .right-col { display: flex; flex-direction: column; gap: 16px; }
+    .right-col { display: flex; flex-direction: column; gap: 0; }
 
     .empty-state {
       border: 1px dashed var(--border); border-radius: var(--radius2);
@@ -242,6 +272,7 @@
     .empty-state .es-icon { font-size: 36px; margin-bottom: 12px; opacity: 0.4; }
     .empty-state p { font-size: 13px; line-height: 1.6; }
 
+    /* stat cards */
     .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .stat-card {
       background: var(--panel); border: 1px solid var(--border);
@@ -259,6 +290,7 @@
     .stat-label { font-size: 11px; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
     .stat-sub   { font-size: 11px; color: var(--text3); margin-top: 2px; }
 
+    /* curve */
     .curve-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
     .curve-row:last-child { border-bottom: none; }
     .curve-pct { width: 34px; font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600; color: var(--text2); flex-shrink: 0; text-align: right; }
@@ -272,6 +304,7 @@
     .curve-runs { width: 90px; font-size: 13px; color: var(--text2); flex-shrink: 0; text-align: right; }
     .curve-runs strong { color: var(--white); font-weight: 600; }
 
+    /* item summary */
     .item-summary { display: flex; align-items: center; gap: 12px; padding: 12px 18px; background: var(--panel2); border-bottom: 1px solid var(--border); }
     .item-icon { width: 36px; height: 36px; background: linear-gradient(135deg, #2a3a5a, #1a2a3a); border: 1px solid var(--border2); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
     .item-name { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; color: var(--gold); }
@@ -299,14 +332,70 @@
   </div>
   <div class="topbar-sep"></div>
   <div class="topbar-badge">Loot Calculator</div>
-  <div class="topbar-right">World of Warcraft · Dungeon Drops</div>
+  <div class="topbar-right">World of Warcraft · Midnight Season 1</div>
 </div>
 
 <div class="page">
 
-  <!-- LEFT: config -->
+  <!-- LEFT -->
   <div>
     <div class="section-label">Configuration</div>
+
+    <!-- Spec picker panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-header-dot gold"></div>
+        <div class="panel-header-title">Specialization</div>
+        <div class="panel-header-right">
+          <span style="font-size:11px;color:var(--text3)">optional</span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="spec-tabs">
+        <button class="spec-tab active" onclick="switchSpecTab('simc', this)">SimC Import</button>
+        <button class="spec-tab" onclick="switchSpecTab('manual', this)">Manual Pick</button>
+      </div>
+
+      <!-- SimC tab -->
+      <div class="spec-tab-body active" id="specTab-simc">
+        <div class="field" style="margin-bottom:12px">
+          <div class="field-label">
+            Paste SimC Export
+            <span class="field-hint">filters loot to your spec</span>
+          </div>
+          <textarea id="simcInput" placeholder="Paste your SimulationCraft export here…"></textarea>
+        </div>
+        <button class="import-btn" onclick="parseSimC()">Import Character</button>
+        <div class="error-box" id="simcError"></div>
+      </div>
+
+      <!-- Manual pick tab -->
+      <div class="spec-tab-body" id="specTab-manual">
+        <div style="margin-bottom:10px">
+          <div class="field-label" style="margin-bottom:8px">Class</div>
+          <div class="class-grid" id="classGrid"></div>
+        </div>
+        <div class="spec-section" id="specSection">
+          <div class="spec-picker-label">Specialization</div>
+          <div class="spec-grid" id="specGrid"></div>
+        </div>
+      </div>
+
+      <!-- Shared spec badge (shown by both tabs) -->
+      <div style="padding: 0 18px 18px" id="specBadgeWrap">
+        <div class="spec-badge" id="specBadge">
+          <div class="spec-badge-icon">🎭</div>
+          <div class="spec-badge-text">
+            <div class="spec-badge-name" id="specBadgeName">—</div>
+            <div class="spec-badge-sub" id="specBadgeSub">—</div>
+          </div>
+          <button class="spec-badge-clear" onclick="clearSpec()" title="Clear spec">×</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Simulation setup -->
     <div class="panel">
       <div class="panel-header">
         <div class="panel-header-dot"></div>
@@ -345,7 +434,11 @@
         <div class="field row2">
           <div>
             <div class="field-label">Players</div>
-            <input type="number" id="players" value="5" min="1" max="100" />
+            <input type="number" id="players" value="5" min="1" max="40" oninput="capTraders()" />
+          </div>
+          <div>
+            <div class="field-label">Traders <span class="field-hint">(can get &amp; trade the item)</span></div>
+            <input type="number" id="traders" value="0" min="0" max="4" />
           </div>
           <div>
             <div class="field-label">Trials</div>
@@ -359,18 +452,18 @@
     </div>
   </div>
 
-  <!-- RIGHT: results -->
+  <!-- RIGHT -->
   <div class="right-col">
     <div class="section-label">Results</div>
 
     <div class="empty-state" id="emptyState">
       <div class="es-icon">🎲</div>
-      <p>Pick a dungeon, select items from the loot pool,<br/>choose your target, then run the simulation.</p>
+      <p>Optionally pick a spec or import via SimC,<br/>choose a dungeon and target item, then simulate.</p>
     </div>
 
     <div id="results">
       <div class="panel">
-        <div class="item-summary" id="itemSummary">
+        <div class="item-summary">
           <div class="item-icon">🗡</div>
           <div>
             <div class="item-name" id="rItemName">—</div>
@@ -413,12 +506,143 @@
 <script>
   const barClasses = ['p25','p50','p75','p90','p99'];
 
-  // State
-  let allItems   = [];   // full loot table from API [{id, name, wowhead_url}]
-  let selectedIds = new Set(); // item IDs the user has checked
+  // ── State ────────────────────────────────────────────────────
+  let allItems     = [];
+  let selectedIds  = new Set();
+  let activeSpecID   = 0;
+  let activeSpecName = '';
+
+  // ── Class/spec data ──────────────────────────────────────────
+  // Each spec: [specID, label]
+  const CLASSES = [
+    { name: 'Death Knight', specs: [[250,'Blood'],[251,'Frost'],[252,'Unholy']] },
+    { name: 'Demon Hunter', specs: [[577,'Havoc'],[581,'Vengeance'],[1480,'Devourer']] },
+    { name: 'Druid',        specs: [[102,'Balance'],[103,'Feral'],[104,'Guardian'],[105,'Restoration']] },
+    { name: 'Evoker',       specs: [[1467,'Devastation'],[1468,'Preservation'],[1473,'Augmentation']] },
+    { name: 'Hunter',       specs: [[253,'Beast Mastery'],[254,'Marksmanship'],[255,'Survival']] },
+    { name: 'Mage',         specs: [[62,'Arcane'],[63,'Fire'],[64,'Frost']] },
+    { name: 'Monk',         specs: [[268,'Brewmaster'],[269,'Windwalker'],[270,'Mistweaver']] },
+    { name: 'Paladin',      specs: [[65,'Holy'],[66,'Protection'],[70,'Retribution']] },
+    { name: 'Priest',       specs: [[256,'Discipline'],[257,'Holy'],[258,'Shadow']] },
+    { name: 'Rogue',        specs: [[259,'Assassination'],[260,'Outlaw'],[261,'Subtlety']] },
+    { name: 'Shaman',       specs: [[262,'Elemental'],[263,'Enhancement'],[264,'Restoration']] },
+    { name: 'Warlock',      specs: [[265,'Affliction'],[266,'Demonology'],[267,'Destruction']] },
+    { name: 'Warrior',      specs: [[71,'Arms'],[72,'Fury'],[73,'Protection']] },
+  ];
+
+  let selectedClassIdx = -1;
+
+  function buildClassGrid() {
+    const grid = document.getElementById('classGrid');
+    grid.innerHTML = '';
+    CLASSES.forEach((cls, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'class-btn';
+      btn.textContent = cls.name;
+      btn.onclick = () => selectClass(i);
+      grid.appendChild(btn);
+    });
+  }
+
+  function selectClass(idx) {
+    selectedClassIdx = idx;
+    // Highlight active class button
+    document.querySelectorAll('.class-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    // Build spec buttons
+    const cls = CLASSES[idx];
+    const specGrid = document.getElementById('specGrid');
+    specGrid.innerHTML = '';
+    cls.specs.forEach(([specID, label]) => {
+      const btn = document.createElement('button');
+      btn.className = 'spec-btn';
+      btn.textContent = label;
+      btn.onclick = () => applyManualSpec(specID, `${cls.name} — ${label}`, label);
+      specGrid.appendChild(btn);
+    });
+    document.getElementById('specSection').classList.add('visible');
+  }
+
+  function applyManualSpec(specID, fullName, specLabel) {
+    // Highlight active spec button
+    document.querySelectorAll('.spec-btn').forEach(b => b.classList.toggle('active', b.textContent === specLabel));
+    setActiveSpec(specID, fullName, CLASSES[selectedClassIdx].name);
+  }
+
+  // ── Tab switching ────────────────────────────────────────────
+  function switchSpecTab(tab, btn) {
+    document.querySelectorAll('.spec-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.spec-tab-body').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('specTab-' + tab).classList.add('active');
+  }
+
+  // ── Shared spec state ────────────────────────────────────────
+  function setActiveSpec(specID, displayName, className) {
+    activeSpecID   = specID;
+    activeSpecName = displayName;
+    document.getElementById('specBadgeName').textContent = displayName;
+    document.getElementById('specBadgeSub').textContent  = `${className} · Spec ID ${specID}`;
+    document.getElementById('specBadge').classList.add('visible');
+    const dungeonID = document.getElementById('dungeonSelect').value;
+    if (dungeonID) loadLoot(dungeonID);
+  }
+
+  function clearSpec() {
+    activeSpecID   = 0;
+    activeSpecName = '';
+    document.getElementById('specBadge').classList.remove('visible');
+    // Reset manual picker state
+    selectedClassIdx = -1;
+    document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('specSection').classList.remove('visible');
+    const dungeonID = document.getElementById('dungeonSelect').value;
+    if (dungeonID) loadLoot(dungeonID);
+  }
+
+  // ── SimC Import ──────────────────────────────────────────────
+  async function parseSimC() {
+    const input  = document.getElementById('simcInput').value.trim();
+    const errBox = document.getElementById('simcError');
+    errBox.classList.remove('visible');
+
+    if (!input) {
+      errBox.textContent = 'Paste your SimC export first.';
+      errBox.classList.add('visible');
+      return;
+    }
+
+    try {
+      const res  = await fetch('/parse-simc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ simc: input })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errBox.textContent = data.error || 'Could not parse SimC string.';
+        errBox.classList.add('visible');
+        return;
+      }
+
+      document.getElementById('simcInput').value = '';
+      // Clear manual picker highlights so it doesn't look stale
+      document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.spec-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('specSection').classList.remove('visible');
+      selectedClassIdx = -1;
+
+      setActiveSpec(data.spec_id, data.spec_name, capitalize(data.class));
+
+    } catch {
+      errBox.textContent = 'Could not reach the server.';
+      errBox.classList.add('visible');
+    }
+  }
+
+  function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
   // ── Dungeon loading ──────────────────────────────────────────
-
   async function loadDungeons() {
     const sel = document.getElementById('dungeonSelect');
     try {
@@ -440,7 +664,10 @@
   async function onDungeonChange() {
     const id = document.getElementById('dungeonSelect').value;
     if (!id) return;
+    await loadLoot(id);
+  }
 
+  async function loadLoot(dungeonID) {
     const list = document.getElementById('lootList');
     list.innerHTML = '<div class="loot-loading">Loading loot table…</div>';
     allItems = [];
@@ -449,10 +676,12 @@
     updateSelectedCount();
 
     try {
-      const res  = await fetch(`/dungeons/${id}/loot`);
+      const url  = activeSpecID
+        ? `/dungeons/${dungeonID}/loot?spec=${activeSpecID}`
+        : `/dungeons/${dungeonID}/loot`;
+      const res  = await fetch(url);
       allItems   = await res.json();
       allItems.sort((a, b) => a.name.localeCompare(b.name));
-      // default: all selected
       allItems.forEach(item => selectedIds.add(item.id));
       renderLootList();
       updateTargetDropdown();
@@ -462,12 +691,11 @@
     }
   }
 
-  // ── Loot list rendering ──────────────────────────────────────
-
+  // ── Loot list ────────────────────────────────────────────────
   function renderLootList() {
     const list = document.getElementById('lootList');
     if (!allItems.length) {
-      list.innerHTML = '<div class="loot-empty">No items found for this dungeon.</div>';
+      list.innerHTML = '<div class="loot-empty">No items found for this spec / dungeon.</div>';
       return;
     }
     list.innerHTML = '';
@@ -486,11 +714,7 @@
   }
 
   function toggleItem(id) {
-    if (selectedIds.has(id)) {
-      selectedIds.delete(id);
-    } else {
-      selectedIds.add(id);
-    }
+    if (selectedIds.has(id)) { selectedIds.delete(id); } else { selectedIds.add(id); }
     const row = document.querySelector(`.loot-item[data-id="${id}"]`);
     if (row) {
       row.classList.toggle('selected', selectedIds.has(id));
@@ -500,80 +724,63 @@
     updateTargetDropdown();
   }
 
-  function selectAll() {
-    allItems.forEach(item => selectedIds.add(item.id));
-    renderLootList();
-    updateTargetDropdown();
-    updateSelectedCount();
-  }
-
-  function selectNone() {
-    selectedIds.clear();
-    renderLootList();
-    updateTargetDropdown();
-    updateSelectedCount();
-  }
-
-  function updateSelectedCount() {
-    document.getElementById('selectedCount').textContent = selectedIds.size;
-  }
-
-  // ── Target dropdown ──────────────────────────────────────────
+  function selectAll()  { allItems.forEach(i => selectedIds.add(i.id)); renderLootList(); updateTargetDropdown(); updateSelectedCount(); }
+  function selectNone() { selectedIds.clear(); renderLootList(); updateTargetDropdown(); updateSelectedCount(); }
+  function updateSelectedCount() { document.getElementById('selectedCount').textContent = selectedIds.size; }
 
   function updateTargetDropdown() {
-    const sel = document.getElementById('targetSelect');
+    const sel  = document.getElementById('targetSelect');
     const prev = sel.value;
     sel.innerHTML = '<option value="">— select an item —</option>';
-    allItems
-      .filter(item => selectedIds.has(item.id))
-      .forEach(item => {
-        const opt = document.createElement('option');
-        opt.value = item.name;
-        opt.dataset.id = item.id;
-        opt.textContent = item.name;
-        if (item.name === prev) opt.selected = true;
-        sel.appendChild(opt);
-      });
+    allItems.filter(i => selectedIds.has(i.id)).forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.name;
+      opt.dataset.id = item.id;
+      opt.textContent = item.name;
+      if (item.name === prev) opt.selected = true;
+      sel.appendChild(opt);
+    });
   }
 
   // ── Simulation ───────────────────────────────────────────────
+  function showError(msg) { const b = document.getElementById('errorBox'); b.textContent = msg; b.classList.add('visible'); }
+  function clearError()   { document.getElementById('errorBox').classList.remove('visible'); }
 
-  function showError(msg) {
-    const box = document.getElementById('errorBox');
-    box.textContent = msg;
-    box.classList.add('visible');
-  }
-  function clearError() {
-    document.getElementById('errorBox').classList.remove('visible');
+  function capTraders() {
+    const players = parseInt(document.getElementById('players').value) || 1;
+    const tradersEl = document.getElementById('traders');
+    const max = Math.max(0, players - 1);
+    tradersEl.max = max;
+    if (parseInt(tradersEl.value) > max) tradersEl.value = max;
   }
 
   async function runSimulation() {
     clearError();
-
     const target  = document.getElementById('targetSelect').value;
     const players = parseInt(document.getElementById('players').value);
+    const traders = parseInt(document.getElementById('traders').value) || 0;
     const trials  = parseInt(document.getElementById('trials').value);
     const pool    = allItems.filter(i => selectedIds.has(i.id)).map(i => i.name);
 
-    if (!pool.length)   return showError('Select at least one item from the loot pool.');
-    if (!target)        return showError('Select a target item.');
-    if (!pool.includes(target)) return showError(`Target item is not in the selected pool.`);
+    if (!pool.length)          return showError('Select at least one item from the loot pool.');
+    if (!target)               return showError('Select a target item.');
+    if (!pool.includes(target)) return showError('Target item is not in the selected pool.');
+    if (traders > players - 1) return showError(`Traders cannot exceed players - 1 (${players - 1}).`);
 
     const btn = document.getElementById('simBtn');
     btn.disabled = true;
     btn.textContent = '⏳ Simulating…';
 
     try {
-      const res = await fetch('/simulate', {
+      const res  = await fetch('/simulate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ target_item: target, players, pool, trials })
+        body: JSON.stringify({ target_item: target, players, traders, pool, trials })
       });
       const data = await res.json();
       if (!res.ok) { showError(data.error || 'Something went wrong.'); return; }
-
       const targetItem = allItems.find(i => i.name === target);
-      renderResults(data, players, pool.length, trials, targetItem);
+      renderResults(data, players, traders, pool.length, trials, targetItem);
     } catch {
       showError('Could not reach the server.');
     } finally {
@@ -582,28 +789,27 @@
     }
   }
 
-  function renderResults(data, players, poolSize, trials, targetItem) {
+  function renderResults(data, players, traders, poolSize, trials, targetItem) {
     document.getElementById('emptyState').style.display = 'none';
 
     const nameEl = document.getElementById('rItemName');
-    if (targetItem?.wowhead_url) {
-      nameEl.innerHTML = `<a href="${targetItem.wowhead_url}" target="_blank" rel="noopener">${data.target_item}</a>`;
-    } else {
-      nameEl.textContent = data.target_item;
-    }
+    nameEl.innerHTML = targetItem?.wowhead_url
+      ? `<a href="${targetItem.wowhead_url}" target="_blank" rel="noopener">${data.target_item}</a>`
+      : data.target_item;
 
+    const specPart    = activeSpecName ? ` · ${activeSpecName}` : '';
+    const traderPart  = traders > 0 ? ` · ${traders} trader${traders !== 1 ? 's' : ''}` : '';
     document.getElementById('rItemMeta').textContent =
-      `${poolSize}-item pool · ${players} player${players !== 1 ? 's' : ''}`;
-    document.getElementById('rDropChance').textContent = (data.drop_chance * 100).toFixed(2) + '%';
+      `${poolSize}-item pool · ${players} player${players !== 1 ? 's' : ''}${traderPart}${specPart}`;
+    document.getElementById('rDropChance').textContent   = (data.drop_chance * 100).toFixed(2) + '%';
     document.getElementById('rDropFraction').textContent = `1 in ${Math.round(data.expected_runs)} runs`;
-    document.getElementById('rExpected').textContent  = Math.round(data.expected_runs);
-    document.getElementById('rSimulated').textContent = data.simulated_runs.toFixed(1);
-    document.getElementById('rTrials').textContent    = `${trials.toLocaleString()} trials`;
+    document.getElementById('rExpected').textContent     = Math.round(data.expected_runs);
+    document.getElementById('rSimulated').textContent    = data.simulated_runs.toFixed(1);
+    document.getElementById('rTrials').textContent       = `${trials.toLocaleString()} trials`;
 
     const container = document.getElementById('curveRows');
     container.innerHTML = '';
     const maxRuns = data.curve[data.curve.length - 1].runs;
-
     data.curve.forEach((pt, i) => {
       const pct  = Math.round(pt.probability * 100);
       const barW = Math.round((pt.runs / maxRuns) * 100);
@@ -624,6 +830,7 @@
   }
 
   // ── Init ─────────────────────────────────────────────────────
+  buildClassGrid();
   loadDungeons();
 </script>
 </body>

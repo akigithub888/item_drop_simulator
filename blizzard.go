@@ -11,7 +11,6 @@ import (
 	"time"
 )
 
-// BlizzardClient handles auth and requests to the Blizzard Game Data API.
 type BlizzardClient struct {
 	clientID     string
 	clientSecret string
@@ -23,14 +22,10 @@ type BlizzardClient struct {
 	tokenExpiry time.Time
 }
 
-// --- Auth token types ---
-
 type blizzardTokenResponse struct {
 	AccessToken string `json:"access_token"`
 	ExpiresIn   int    `json:"expires_in"`
 }
-
-// --- Journal API types ---
 
 type DungeonIndex struct {
 	Instances []DungeonRef `json:"instances"`
@@ -41,31 +36,6 @@ type DungeonRef struct {
 	Name string `json:"name"`
 }
 
-type DungeonDetail struct {
-	ID         int         `json:"id"`
-	Name       string      `json:"name"`
-	Encounters []Encounter `json:"encounters"`
-}
-
-type Encounter struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-type EncounterDetail struct {
-	ID    int         `json:"id"`
-	Name  string      `json:"name"`
-	Items []LootEntry `json:"items"`
-}
-
-type LootEntry struct {
-	ID   int `json:"id"`
-	Item struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
-	} `json:"item"`
-}
-
 // LootItem is what we expose to the frontend.
 type LootItem struct {
 	ID         int    `json:"id"`
@@ -73,7 +43,31 @@ type LootItem struct {
 	WowheadURL string `json:"wowhead_url"`
 }
 
-// NewBlizzardClient creates a client from environment variables.
+// MidnightSeason1Dungeons filters the Blizzard journal instance list.
+// Keys are Blizzard journal instance IDs.
+var MidnightSeason1Dungeons = map[int]bool{
+	1299: true,
+	1315: true,
+	1300: true,
+	1316: true,
+	1201: true,
+	945:  true,
+	476:  true,
+	278:  true,
+}
+
+// BlizzardToLuaInstanceID maps Blizzard journal instance IDs to KeystoneLoot instanceIds.
+var BlizzardToLuaInstanceID = map[int]int{
+	1299: 2805, // Windrunner Spire
+	1315: 2874, // Maisara Caverns
+	1300: 2811, // Magisters' Terrace
+	1316: 2915, // Nexus-Point Xenas
+	1201: 2526, // Algeth'ar Academy
+	945:  1753, // Seat of the Triumvirate
+	476:  1209, // Skyreach (Dawn of the Infinite)
+	278:  658,  // Pit of Saron
+}
+
 func NewBlizzardClient() (*BlizzardClient, error) {
 	id := os.Getenv("BLIZZARD_CLIENT_ID")
 	secret := os.Getenv("BLIZZARD_CLIENT_SECRET")
@@ -88,7 +82,6 @@ func NewBlizzardClient() (*BlizzardClient, error) {
 	}, nil
 }
 
-// token returns a valid access token, fetching a new one if needed.
 func (c *BlizzardClient) token() (string, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -100,10 +93,7 @@ func (c *BlizzardClient) token() (string, error) {
 	data := url.Values{}
 	data.Set("grant_type", "client_credentials")
 
-	req, err := http.NewRequest("POST",
-		"https://oauth.battle.net/token",
-		strings.NewReader(data.Encode()),
-	)
+	req, err := http.NewRequest("POST", "https://oauth.battle.net/token", strings.NewReader(data.Encode()))
 	if err != nil {
 		return "", err
 	}
@@ -126,16 +116,13 @@ func (c *BlizzardClient) token() (string, error) {
 	return c.accessToken, nil
 }
 
-// get makes an authenticated GET request to the Blizzard API.
 func (c *BlizzardClient) get(path string, out any) error {
 	token, err := c.token()
 	if err != nil {
 		return err
 	}
 
-	base := fmt.Sprintf("https://%s.api.blizzard.com", c.region)
-	reqURL := fmt.Sprintf("%s%s", base, path)
-
+	reqURL := fmt.Sprintf("https://%s.api.blizzard.com%s", c.region, path)
 	req, err := http.NewRequest("GET", reqURL, nil)
 	if err != nil {
 		return err
@@ -155,45 +142,57 @@ func (c *BlizzardClient) get(path string, out any) error {
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
-// GetDungeons returns the list of all journal instances (dungeons + raids).
+// GetDungeons returns the current season dungeon list filtered by Blizzard instance ID.
 func (c *BlizzardClient) GetDungeons() ([]DungeonRef, error) {
 	var index DungeonIndex
-	err := c.get("/data/wow/journal-instance/index?namespace=static-us&locale=en_US", &index)
-	if err != nil {
+	if err := c.get("/data/wow/journal-instance/index?namespace=static-us&locale=en_US", &index); err != nil {
 		return nil, err
 	}
-	return index.Instances, nil
+
+	var filtered []DungeonRef
+	for _, d := range index.Instances {
+		if MidnightSeason1Dungeons[d.ID] {
+			filtered = append(filtered, d)
+		}
+	}
+	return filtered, nil
 }
 
-// GetLoot returns the combined loot table for all encounters in a dungeon.
-func (c *BlizzardClient) GetLoot(dungeonID int) ([]LootItem, error) {
-	var detail DungeonDetail
-	path := fmt.Sprintf("/data/wow/journal-instance/%d?namespace=static-us&locale=en_US", dungeonID)
-	if err := c.get(path, &detail); err != nil {
-		return nil, err
+// GetItemNames fetches English names for a slice of item IDs concurrently.
+// Returns a map of item ID -> name. Failed fetches are silently skipped.
+func (c *BlizzardClient) GetItemNames(itemIDs []int) map[int]string {
+	type result struct {
+		id   int
+		name string
 	}
 
-	seen := map[int]bool{}
-	var items []LootItem
+	sem := make(chan struct{}, 10) // max 10 concurrent requests
+	results := make(chan result, len(itemIDs))
 
-	for _, enc := range detail.Encounters {
-		var encDetail EncounterDetail
-		encPath := fmt.Sprintf("/data/wow/journal-encounter/%d?namespace=static-us&locale=en_US", enc.ID)
-		if err := c.get(encPath, &encDetail); err != nil {
-			continue // skip encounters that fail, don't abort everything
-		}
-		for _, entry := range encDetail.Items {
-			if seen[entry.Item.ID] || entry.Item.Name == "" {
-				continue
+	for _, id := range itemIDs {
+		id := id
+		go func() {
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			var out struct {
+				Name string `json:"name"`
 			}
-			seen[entry.Item.ID] = true
-			items = append(items, LootItem{
-				ID:         entry.Item.ID,
-				Name:       entry.Item.Name,
-				WowheadURL: fmt.Sprintf("https://www.wowhead.com/item=%d", entry.Item.ID),
-			})
-		}
+			path := fmt.Sprintf("/data/wow/item/%d?namespace=static-us&locale=en_US", id)
+			if err := c.get(path, &out); err == nil && out.Name != "" {
+				results <- result{id, out.Name}
+			} else {
+				results <- result{id, ""}
+			}
+		}()
 	}
 
-	return items, nil
+	names := make(map[int]string, len(itemIDs))
+	for range itemIDs {
+		r := <-results
+		if r.name != "" {
+			names[r.id] = r.name
+		}
+	}
+	return names
 }

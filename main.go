@@ -11,11 +11,7 @@ import (
 )
 
 func main() {
-	// Load .env if present (ignored in production where env vars are set directly)
-	err := godotenv.Load()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "godotenv error: %v\n", err)
-	}
+	_ = godotenv.Load()
 
 	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -25,6 +21,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	loot, err := LoadLootData("data")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Loot data error: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Printf("Loaded %d items and %d dungeons from loot data\n", len(loot.Items), len(loot.Dungeons))
+
+	// Fetch item names from Blizzard API for all known season dungeons
+	fmt.Println("Fetching item names from Blizzard API...")
+	allItemIDs := loot.AllItemIDs(BlizzardToLuaInstanceID)
+	names := blizz.GetItemNames(allItemIDs)
+	loot.ItemNames = names
+	fmt.Printf("Resolved %d/%d item names\n", len(names), len(allItemIDs))
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -33,7 +43,8 @@ func main() {
 	http.HandleFunc("/health", handleHealth)
 	http.HandleFunc("/simulate", handleSimulate(rng))
 	http.HandleFunc("/dungeons", handleDungeons(blizz))
-	http.HandleFunc("/dungeons/", handleDungeonLoot(blizz))
+	http.HandleFunc("/dungeons/", handleDungeonLoot(loot))
+	http.HandleFunc("/parse-simc", handleParseSimC)
 	http.Handle("/", http.FileServer(http.Dir("frontend")))
 
 	fmt.Printf("Server running on http://localhost:%s\n", port)
