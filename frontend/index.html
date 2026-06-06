@@ -8,6 +8,12 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    .loot-item-slot {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text3); background: var(--bg); border: 1px solid var(--border);
+    border-radius: 2px; padding: 1px 5px; flex-shrink: 0;
+  }
+
     :root {
       --bg:        #0e1015;
       --bg2:       #141820;
@@ -505,6 +511,15 @@
 
 <script>
   const barClasses = ['p25','p50','p75','p90','p99'];
+  
+  
+  // Item slots
+  const SLOT_LABELS = {
+  1: 'Head', 2: 'Neck', 3: 'Shoulder', 5: 'Chest', 6: 'Waist',
+  7: 'Legs', 8: 'Feet', 9: 'Wrist', 10: 'Hands', 11: 'Finger',
+  12: 'Finger', 13: 'Trinket', 14: 'Trinket', 15: 'Back',
+  16: 'Main Hand', 17: 'Off Hand', 21: 'Main Hand', 22: 'Off Hand',
+};
 
   // ── State ────────────────────────────────────────────────────
   let allItems     = [];
@@ -704,10 +719,11 @@
       row.className = 'loot-item' + (selectedIds.has(item.id) ? ' selected' : '');
       row.dataset.id = item.id;
       row.innerHTML = `
-        <div class="loot-item-check">${selectedIds.has(item.id) ? '✓' : ''}</div>
-        <div class="loot-item-name">${item.name}</div>
-        <a class="loot-item-link" href="${item.wowhead_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Wowhead</a>
-      `;
+    <div class="loot-item-check">${selectedIds.has(item.id) ? '✓' : ''}</div>
+    <div class="loot-item-name">${item.name}</div>
+    ${item.inventory_type ? `<span class="loot-item-slot">${SLOT_LABELS[item.inventory_type] || ''}</span>` : ''}
+    <a class="loot-item-link" href="${item.wowhead_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Wowhead</a>
+  `;
       row.addEventListener('click', () => toggleItem(item.id));
       list.appendChild(row);
     });

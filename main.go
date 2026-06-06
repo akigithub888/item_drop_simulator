@@ -31,7 +31,9 @@ func main() {
 	// Fetch item names from Blizzard API for all known season dungeons
 	fmt.Println("Fetching item names from Blizzard API...")
 	allItemIDs := loot.AllItemIDs(BlizzardToLuaInstanceID)
-	names := blizz.GetItemNames(allItemIDs)
+	names, slots := blizz.GetItemDetails(loot.AllItemIDs(BlizzardToLuaInstanceID))
+	loot.ItemNames = names
+	loot.ItemSlots = slots
 	loot.ItemNames = names
 	fmt.Printf("Resolved %d/%d item names\n", len(names), len(allItemIDs))
 

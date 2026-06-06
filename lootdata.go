@@ -24,9 +24,11 @@ type DungeonEntry struct {
 
 // LootData holds all parsed data from the Lua files.
 type LootData struct {
-	Items     map[int]ItemEntry
-	Dungeons  map[int]DungeonEntry // keyed by Lua instanceId
-	ItemNames map[int]string       // populated after Blizzard API fetch
+	Items        map[int]ItemEntry
+	Dungeons     map[int]DungeonEntry
+	ItemNames    map[int]string
+	ItemSlots    map[int]int             // itemID -> inventory_type
+	TrinketSpecs map[string]map[int]bool // itemName -> set of allowed specIDs
 }
 
 var reNumbers = regexp.MustCompile(`\d+`)
@@ -38,9 +40,11 @@ var reNumbers = regexp.MustCompile(`\d+`)
 // handles edge cases like the Algeth'ar Puzzle Box correctly.
 func LoadLootData(dataDir string) (*LootData, error) {
 	ld := &LootData{
-		Items:     make(map[int]ItemEntry),
-		Dungeons:  make(map[int]DungeonEntry),
-		ItemNames: make(map[int]string),
+		Items:        make(map[int]ItemEntry),
+		Dungeons:     make(map[int]DungeonEntry),
+		ItemNames:    make(map[int]string),
+		ItemSlots:    make(map[int]int),
+		TrinketSpecs: make(map[string]map[int]bool),
 	}
 
 	if err := ld.parseItems(dataDir + "/items.lua"); err != nil {
@@ -53,10 +57,25 @@ func LoadLootData(dataDir string) (*LootData, error) {
 	// Overlay Wowhead spec data if the JSON file exists.
 	specsPath := dataDir + "/item_specs.json"
 	if loaded, n, err := ld.loadWowheadSpecs(specsPath); err != nil {
-		// Non-fatal: warn and continue with KeystoneLoot data.
 		fmt.Fprintf(os.Stderr, "[WARN] could not load %s: %v — using KeystoneLoot spec data\n", specsPath, err)
 	} else if loaded {
 		fmt.Printf("Loaded Wowhead spec data for %d items from %s\n", n, specsPath)
+	}
+
+	// Load trinket role overrides.
+	overridesPath := dataDir + "/trinket_overrides.json"
+	if data, err := os.ReadFile(overridesPath); err == nil {
+		var raw map[string][]int
+		if json.Unmarshal(data, &raw) == nil {
+			ld.TrinketSpecs = make(map[string]map[int]bool)
+			for name, specList := range raw {
+				ld.TrinketSpecs[name] = make(map[int]bool, len(specList))
+				for _, sid := range specList {
+					ld.TrinketSpecs[name][sid] = true
+				}
+			}
+			fmt.Printf("Loaded trinket overrides for %d items from %s\n", len(ld.TrinketSpecs), overridesPath)
+		}
 	}
 
 	return ld, nil
@@ -229,9 +248,8 @@ func (ld *LootData) AllItemIDs(blizzardToLua map[int]int) []int {
 	return ids
 }
 
-// GetLootForSpec returns items for a dungeon filtered by spec ID.
-// luaInstanceID is the KeystoneLoot instanceId (use BlizzardToLuaInstanceID to convert).
-// If specID is 0, all items are returned unfiltered.
+var TrinketSpecs map[string]map[int]bool // item name -> set of allowed spec IDs
+
 func (ld *LootData) GetLootForSpec(luaInstanceID, specID int) ([]LootItem, error) {
 	dungeon, ok := ld.Dungeons[luaInstanceID]
 	if !ok {
@@ -242,8 +260,26 @@ func (ld *LootData) GetLootForSpec(luaInstanceID, specID int) ([]LootItem, error
 	for _, itemID := range dungeon.ItemIDs {
 		entry, hasEntry := ld.Items[itemID]
 		if specID != 0 {
-			if !hasEntry || len(entry.SpecIDs) == 0 || !entry.SpecIDs[specID] {
-				continue
+			slot := ld.ItemSlots[itemID]
+			isRing := slot == 11 || slot == 12
+			isTrinket := slot == 13 || slot == 14
+
+			if isTrinket {
+				name := ld.ItemNames[itemID]
+				if specs, ok := ld.TrinketSpecs[name]; ok {
+					if !specs[specID] {
+						continue
+					}
+				} else {
+					// not in override list, fall back to spec data
+					if !hasEntry || len(entry.SpecIDs) == 0 || !entry.SpecIDs[specID] {
+						continue
+					}
+				}
+			} else if !isRing {
+				if !hasEntry || len(entry.SpecIDs) == 0 || !entry.SpecIDs[specID] {
+					continue
+				}
 			}
 		}
 
@@ -253,9 +289,10 @@ func (ld *LootData) GetLootForSpec(luaInstanceID, specID int) ([]LootItem, error
 		}
 
 		items = append(items, LootItem{
-			ID:         itemID,
-			Name:       name,
-			WowheadURL: fmt.Sprintf("https://www.wowhead.com/item=%d", itemID),
+			ID:            itemID,
+			Name:          name,
+			WowheadURL:    fmt.Sprintf("https://www.wowhead.com/item=%d", itemID),
+			InventoryType: ld.ItemSlots[itemID],
 		})
 	}
 

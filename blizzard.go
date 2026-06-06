@@ -38,9 +38,10 @@ type DungeonRef struct {
 
 // LootItem is what we expose to the frontend.
 type LootItem struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	WowheadURL string `json:"wowhead_url"`
+	ID            int    `json:"id"`
+	Name          string `json:"name"`
+	WowheadURL    string `json:"wowhead_url"`
+	InventoryType int    `json:"inventory_type"`
 }
 
 // MidnightSeason1Dungeons filters the Blizzard journal instance list.
@@ -159,14 +160,15 @@ func (c *BlizzardClient) GetDungeons() ([]DungeonRef, error) {
 }
 
 // GetItemNames fetches English names for a slice of item IDs concurrently.
-// Returns a map of item ID -> name. Failed fetches are silently skipped.
-func (c *BlizzardClient) GetItemNames(itemIDs []int) map[int]string {
+// Returns a map of item ID -> name (and slots). Failed fetches are silently skipped.
+func (c *BlizzardClient) GetItemDetails(itemIDs []int) (map[int]string, map[int]int) {
 	type result struct {
-		id   int
-		name string
+		id            int
+		name          string
+		inventoryType int
 	}
 
-	sem := make(chan struct{}, 10) // max 10 concurrent requests
+	sem := make(chan struct{}, 10)
 	results := make(chan result, len(itemIDs))
 
 	for _, id := range itemIDs {
@@ -176,23 +178,53 @@ func (c *BlizzardClient) GetItemNames(itemIDs []int) map[int]string {
 			defer func() { <-sem }()
 
 			var out struct {
-				Name string `json:"name"`
+				Name          string `json:"name"`
+				InventoryType struct {
+					Type string `json:"type"` // API returns a string like "FINGER"
+				} `json:"inventory_type"`
+			}
+			inventoryTypeMap := map[string]int{
+				"HEAD":        1,
+				"NECK":        2,
+				"SHOULDER":    3,
+				"CHEST":       5,
+				"ROBE":        5, // chest variant
+				"WAIST":       6,
+				"LEGS":        7,
+				"FEET":        8,
+				"WRIST":       9,
+				"HANDS":       10,
+				"HAND":        10, // API returns both
+				"FINGER":      11,
+				"TRINKET":     13,
+				"CLOAK":       15,
+				"BACK":        15,
+				"MAINHAND":    16,
+				"WEAPON":      16,
+				"TWOHWEAPON":  17,
+				"OFFHAND":     17,
+				"HOLDABLE":    17, // off-hand held items (tomes, etc.)
+				"SHIELD":      17,
+				"RANGED":      18,
+				"RANGEDRIGHT": 18, // guns/bows/crossbows
+				"NON_EQUIP":   0,  // explicitly non-equippable, will be hidden in frontend
 			}
 			path := fmt.Sprintf("/data/wow/item/%d?namespace=static-us&locale=en_US", id)
 			if err := c.get(path, &out); err == nil && out.Name != "" {
-				results <- result{id, out.Name}
-			} else {
-				results <- result{id, ""}
+				slot := inventoryTypeMap[out.InventoryType.Type]
+				results <- result{id, out.Name, slot}
 			}
 		}()
 	}
 
 	names := make(map[int]string, len(itemIDs))
+	slots := make(map[int]int, len(itemIDs))
 	for range itemIDs {
 		r := <-results
 		if r.name != "" {
 			names[r.id] = r.name
+			slots[r.id] = r.inventoryType
 		}
 	}
-	return names
+	return names, slots
 }
