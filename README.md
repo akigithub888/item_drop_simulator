@@ -1,70 +1,133 @@
-# scrape-wowhead
+# Item Drop Simulator
 
-Builds `data/item_specs.json` from Wowhead's loot-specialization data.
-Run once per season, or whenever the dungeon pool changes.
+A Go-based drop chance simulator for dungeon loot. The server loads dungeon and item metadata from `data/`, resolves item names via the Blizzard API, and exposes a JSON API plus a simple frontend for exploring loot pools, estimating drop chances, and simulating runs.
 
-## Setup
+The app is also live at: https://item-drop-simulator.onrender.com
 
-The scraper needs `golang.org/x/net` for SOCKS5 support.
-Add it to your module from the project root:
+This simulator is built for World of Warcraft dungeon loot. It uses dungeon / item metadata from the `data/` directory and supports the current seasonal dungeon pool and item drop rules.
+
+## Features
+
+- Simulate drop probability for a target item in a custom loot pool
+- Account for group size and traders who can obtain the item and trade it to you
+- Compute expected runs and probability curves for common thresholds
+- Serve dungeon and loot metadata via HTTP
+- Parse SimulationCraft strings for class/spec lookup
+- Includes a browser-based frontend at `/`
+
+## Requirements
+
+- Go 1.20+ (or compatible Go toolchain)
+- `data/` directory with required metadata:
+  - `items.lua`
+  - `dungeons.lua`
+  - `item_specs.json`
+  - `trinket_overrides.json`
+- Internet access for Blizzard API item name resolution at startup
+
+## Data sources and replication
+
+The simulator reads World of Warcraft dungeon loot metadata from the `data/` directory. The files include:
+
+- `items.lua`: raw item definitions and IDs
+- `dungeons.lua`: dungeon IDs, seasons, and loot zone mappings
+- `item_specs.json`: specialization-specific loot pool rules
+- `trinket_overrides.json`: special-case item mapping overrides
+
+At startup, the app also resolves item names through the Blizzard API, so the raw data IDs are mapped to human-readable item names.
+
+If you want to reproduce the data locally, the repository includes a scraper helper in `cmd/scrape-wowhead/` that can generate or refresh item/spec metadata from Wowhead.
+
+## Run locally
+
+Clone the repository and run it from your local machine:
 
 ```bash
-go get golang.org/x/net/proxy
+git clone <repository-url>
+cd item_drop_simulator
+go run .
 ```
 
-## Usage
+Or build and run the binary:
 
-### Direct (if you can reach Wowhead)
 ```bash
-go run ./cmd/scrape-wowhead/
+go build -o item_drop_simulator .
+./item_drop_simulator
 ```
 
-### Through Tor Browser
-Start Tor Browser, then:
+The server listens on `localhost:8080` by default. To use a custom port:
+
 ```bash
-go run ./cmd/scrape-wowhead/ --proxy 10.255.255.254:9150
+PORT=3000 go run .
 ```
 
-### Through system Tor (`tor` package / service)
-```bash
-go run ./cmd/scrape-wowhead/ --proxy 10.255.255.254:9050
+If you need to refresh the WoW loot dataset, update the files in `data/` and regenerate `item_specs.json` using the helper under `cmd/scrape-wowhead/`.
+
+## HTTP API
+
+### Health check
+
+- `GET /health`
+
+Returns:
+
+```json
+{"status":"ok"}
 ```
 
-### Through system Tor with circuit rotation every 20 items
-Requires `ControlPort 9051` in your `torrc` (and `CookieAuthentication 0`):
-```bash
-go run ./cmd/scrape-wowhead/ --proxy 10.255.255.254:9050 --rotate 20
+### Simulate drop chances
+
+- `POST /simulate`
+- Request body:
+
+```json
+{
+  "target_item": "Mythic Sword",
+  "players": 5,
+  "traders": 2,
+  "pool": ["Item A", "Item B", "Mythic Sword"],
+  "trials": 100000
+}
 ```
 
-### Brave's built-in Tor window
-Open a Private Window with Tor in Brave, then:
-```bash
-go run ./cmd/scrape-wowhead/ --proxy 127.0.0.1:9150
+- Response body contains:
+  - `drop_chance`
+  - `expected_runs`
+  - `simulated_runs`
+  - `trials`
+  - probability curve points
+
+### Dungeon metadata
+
+- `GET /dungeons`
+- `GET /dungeons/{blizzard_dungeon_id}?spec={specID}`
+
+Use these endpoints to fetch available dungeon data and lookup spec-specific loot.
+
+### Parse SimulationCraft strings
+
+- `POST /parse-simc`
+- Request body:
+
+```json
+{ "simc": "<your simc string>" }
 ```
-Note: Brave's Tor port may vary — check `brave://net-internals/#proxy` if 9150 doesn't work.
 
-## All flags
+- Response body includes class/spec identifiers and resolved names.
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--data` | `./data` | Directory with `items.lua` / `dungeons.lua` |
-| `--out` | `./data/item_specs.json` | Output file path |
-| `--delay` | `1200` | Milliseconds between requests |
-| `--proxy` | _(none)_ | SOCKS5 proxy address |
-| `--rotate` | `0` | Rotate Tor circuit every N items (0 = off) |
+## Frontend
 
-## Resuming
+The repository serves `frontend/index.html` at `/`. Open the app in your browser after starting the server.
 
-The scraper writes progress after every single item. If it stops for any reason
-(Ctrl-C, network error, rate limit) just run it again — items already in the
-JSON are skipped automatically.
+## Data
 
-## Enabling Tor ControlPort (for --rotate)
+The simulator reads dungeon and loot metadata from the `data/` directory. This includes:
 
-Add to `/etc/tor/torrc` (Linux) or your Tor Browser's `torrc`:
-```
-ControlPort 9051
-CookieAuthentication 0
-```
-Then restart Tor. The scraper connects to port 9051 and sends `SIGNAL NEWNYM`
-to request a new exit circuit.
+- `items.lua` — item definitions and identifiers
+- `dungeons.lua` — dungeon IDs and maps
+- `item_specs.json` — spec-specific loot pools
+- `trinket_overrides.json` — special item mapping rules
+
+## Notes
+
+The main application entrypoint is the server in `main.go`. There is also a separate helper under `cmd/scrape-wowhead/` in this repository, but the simulator itself is focused on running drop simulations and serving loot data.
