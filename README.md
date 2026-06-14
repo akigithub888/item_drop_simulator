@@ -1,46 +1,24 @@
-# Item Drop Simulator
+# Dungeon Drop Dive
 
-A Go-based drop chance simulator for dungeon loot. The server loads dungeon and item metadata from `data/`, resolves item names via the Blizzard API, and exposes a JSON API plus a simple frontend for exploring loot pools, estimating drop chances, and simulating runs.
+A World of Warcraft dungeon loot simulator for estimating drop chances, expected runs, and spec-specific loot pools. The app is live at: https://item-drop-simulator.onrender.com
 
-The app is also live at: https://item-drop-simulator.onrender.com
+## Description
 
-This simulator is built for World of Warcraft dungeon loot. It uses dungeon / item metadata from the `data/` directory and supports the current seasonal dungeon pool and item drop rules.
+Dungeon Drop Dive uses WoW dungeon and item metadata to simulate how likely it is to obtain a specific drop from a season's dungeon pool. It calculates probability curves, expected clear counts, and the impact of group size and traders.
 
-## Features
+## Motivation
 
-- Simulate drop probability for a target item in a custom loot pool
-- Account for group size and traders who can obtain the item and trade it to you
-- Compute expected runs and probability curves for common thresholds
-- Serve dungeon and loot metadata via HTTP
-- Parse SimulationCraft strings for class/spec lookup
-- Includes a browser-based frontend at `/`
+I built this project to make WoW dungeon loot odds easier to understand. Instead of guessing how many clears it takes to see a target item, Dungeon Drop Dive provides a data-driven view of drop probabilities using real dungeon loot metadata and Blizzard API item resolution.
 
-## Requirements
+## Quick Start
 
-- Go 1.20+ (or compatible Go toolchain)
-- `data/` directory with required metadata:
-  - `items.lua`
-  - `dungeons.lua`
-  - `item_specs.json`
-  - `trinket_overrides.json`
-- Internet access for Blizzard API item name resolution at startup
+### Run the live demo
 
-## Data sources and replication
+Open the live app:
 
-The simulator reads World of Warcraft dungeon loot metadata from the `data/` directory. The files include:
+- https://item-drop-simulator.onrender.com
 
-- `items.lua`: raw item definitions and IDs
-- `dungeons.lua`: dungeon IDs, seasons, and loot zone mappings
-- `item_specs.json`: specialization-specific loot pool rules
-- `trinket_overrides.json`: special-case item mapping overrides
-
-At startup, the app also resolves item names through the Blizzard API, so the raw data IDs are mapped to human-readable item names.
-
-If you want to reproduce the data locally, the repository includes a scraper helper in `cmd/scrape-wowhead/` that can generate or refresh item/spec metadata from Wowhead.
-
-## Run locally
-
-Clone the repository and run it from your local machine:
+### Run locally
 
 ```bash
 git clone <repository-url>
@@ -48,24 +26,31 @@ cd item_drop_simulator
 go run .
 ```
 
-Or build and run the binary:
+Or build the binary:
 
 ```bash
 go build -o item_drop_simulator .
 ./item_drop_simulator
 ```
 
-The server listens on `localhost:8080` by default. To use a custom port:
+The server listens on `localhost:8080` by default. To use a different port:
 
 ```bash
 PORT=3000 go run .
 ```
 
-If you need to refresh the WoW loot dataset, update the files in `data/` and regenerate `item_specs.json` using the helper under `cmd/scrape-wowhead/`.
+## Usage
 
-## HTTP API
+### What it does
 
-### Health check
+- Simulates WoW dungeon drop probability for a target item
+- Uses the current dungeon loot pool and item metadata
+- Accounts for players and traders who can also obtain the item and trade it
+- Exposes a JSON API and a simple browser frontend
+
+### HTTP API
+
+#### Health check
 
 - `GET /health`
 
@@ -75,10 +60,11 @@ Returns:
 {"status":"ok"}
 ```
 
-### Simulate drop chances
+#### Simulate drop chances
 
 - `POST /simulate`
-- Request body:
+
+Request body example:
 
 ```json
 {
@@ -90,44 +76,76 @@ Returns:
 }
 ```
 
-- Response body contains:
-  - `drop_chance`
-  - `expected_runs`
-  - `simulated_runs`
-  - `trials`
-  - probability curve points
+Response body includes:
 
-### Dungeon metadata
+- `drop_chance`
+- `expected_runs`
+- `simulated_runs`
+- `trials`
+- `curve` points for probability thresholds
+
+#### Dungeon metadata
 
 - `GET /dungeons`
 - `GET /dungeons/{blizzard_dungeon_id}?spec={specID}`
 
-Use these endpoints to fetch available dungeon data and lookup spec-specific loot.
+These endpoints return available dungeon data and spec-specific loot pools.
 
-### Parse SimulationCraft strings
+#### Parse SimulationCraft strings
 
 - `POST /parse-simc`
-- Request body:
+
+Request body example:
 
 ```json
 { "simc": "<your simc string>" }
 ```
 
-- Response body includes class/spec identifiers and resolved names.
+Response body returns parsed class/spec identifiers and resolved names.
 
-## Frontend
+### Frontend
 
-The repository serves `frontend/index.html` at `/`. Open the app in your browser after starting the server.
+The app serves `frontend/index.html` at `/`. Open the browser after starting the server to use the interactive UI.
 
 ## Data
 
-The simulator reads dungeon and loot metadata from the `data/` directory. This includes:
+The simulator depends on World of Warcraft dungeon and loot metadata stored in `data/`:
 
-- `items.lua` — item definitions and identifiers
-- `dungeons.lua` — dungeon IDs and maps
-- `item_specs.json` — spec-specific loot pools
-- `trinket_overrides.json` — special item mapping rules
+- `items.lua` — item definitions and IDs
+- `dungeons.lua` — dungeon IDs, seasonal pools, and loot mappings
+- `item_specs.json` — specialization-specific loot pool rules
+- `trinket_overrides.json` — special item mapping overrides
+
+At startup, the server resolves item names through the Blizzard API so the raw IDs become readable item titles in the UI and API responses.
+
+If you want to reproduce or refresh the dataset locally, use the helper in `cmd/scrape-wowhead/` to generate or update `item_specs.json` from Wowhead data.
+
+## Contributing
+
+### Clone the repo
+
+```bash
+git clone <repository-url>
+cd item_drop_simulator
+```
+
+### Build and run
+
+```bash
+go build
+./item_drop_simulator
+```
+
+### Run tests
+
+There is no test suite included yet, but the server can be validated by starting it and using the `/health` endpoint.
+
+### Want to contribute?
+
+If you would like to help improve the project, please fork the repository, make your changes, and open a pull request.
 
 ## Notes
 
-The main application entrypoint is the server in `main.go`. There is also a separate helper under `cmd/scrape-wowhead/` in this repository, but the simulator itself is focused on running drop simulations and serving loot data.
+- The main application entrypoint is `main.go`.
+- The project includes a separate `cmd/scrape-wowhead/` helper for generating item/spec metadata from Wowhead.
+- The live deployed demo is available at https://item-drop-simulator.onrender.com
